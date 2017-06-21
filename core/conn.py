@@ -14,7 +14,7 @@ class FundParser(HTMLParser):
 
 	def handle_endtag(self, tag):
 		if tag == 'tr':
-			fund = Fund.Fund(self.item[0], self.item[1], self.item[3])
+			fund = Fund.FundHistory(self.item[0], self.item[1], self.item[3])
 			self.links.append(fund)
 
 
@@ -24,8 +24,8 @@ class FundParser(HTMLParser):
 
 
 
-code = '070002'
-size = 1
+# code = '070002'
+# size = 1
 def getData(code, size):
 	conn = None
 	try:
