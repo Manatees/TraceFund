@@ -1,5 +1,5 @@
 from django.db import models
-
+from . import utilities
 
 class Fund(models.Model):
 	fund_name = models.CharField(max_length=200)
@@ -12,6 +12,13 @@ class Fund(models.Model):
 
 	def latest_fund_data(self):		
 		return self.fundhistory_set.order_by('-date')[0]
+
+	def __refresh_fund_data(self, in_days):
+		return utilities.do_it(self.fund_code, in_days)
+
+	def update(self):
+		self.latest_remote_fund_data = self.__refresh_fund_data(1)
+
 
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
