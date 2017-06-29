@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from django.db import models
 from . import utilities
 import datetime
@@ -7,12 +9,16 @@ class Fund(models.Model):
 	fund_code = models.CharField(max_length=20)
 	fund_p_rate = models.DecimalField('purchase rate', max_digits=4, decimal_places=4)
 	
+	def refresh_holdon_fund():
+		[fnd.update() for fnd in Fund.objects.all()]
 
 	def __str__(self):
 		return '%s (%s)' % (self.fund_name, self.fund_code)
 
 	def latest_fund_data(self):		
-		return self.fundhistory_set.order_by('-date')[0]
+		fh = self.fundhistory_set.order_by('-date')
+		if len(fh) > 0:
+			return fh[0]
 
 	def current_redemption_rate(self, current_days):
 		rates = list(self.redemptionratetable_set.order_by('days'))
@@ -29,15 +35,30 @@ class Fund(models.Model):
 		return utilities.do_it(self.fund_code, in_days)
 
 	def update(self):
-		current_date = datetime.datetime.now().date()
-		diff_days = (current_date - self.latest_fund_data().date).days
-		self.latest_remote_fund_data = self.__refresh_fund_data(diff_days)
+		update_records = 100
+		if self.latest_fund_data() == None:
+			self.__update_forced(update_records)
+		else:
+			self.__udpate_smarted()
+	
+	def __update_forced(self, days):
+		r_data = self.__refresh_fund_data(days)
+		[self.__insert_history(fnd[0], fnd[1], fnd[3]) for fnd in r_data]
 
+	def __udpate_smarted(self):
+		current_date = datetime.datetime.now().date()
+		baseline_date = self.latest_fund_data().date
+		diff_days = (current_date - baseline_date).days
+		r_data = self.__refresh_fund_data(diff_days)
+		[self.__insert_history(fnd[0], fnd[1], fnd[3]) for fnd in r_data if fnd[0] > str(baseline_date)]		
+
+	def __insert_history(self, _date, _price, _note):		
+		self.fundhistory_set.create(date=_date, netprice=_price, note=_note)
 
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
 	date = models.DateField('history date')
-	netprice = models.DecimalField('net price', max_digits=4, decimal_places=4)
+	netprice = models.DecimalField('net price', max_digits=6, decimal_places=4)
 	note = models.CharField(max_length=20, blank=True)
 
 	def __str__(self):
@@ -52,4 +73,9 @@ class RedemptionRateTable(models.Model):
 		return '%s -> %d: %g' % ( self.fund.fund_name, self.days, self.rate_value)
 		
 
-		
+class Account(models.Model):
+	pass
+
+class Trade(models.Model):
+	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
+	trade_date = models.DateField()
