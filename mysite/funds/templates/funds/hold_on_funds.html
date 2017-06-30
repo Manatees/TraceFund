@@ -1,0 +1,14 @@
+{% if hold_on_fund_list %}
+	<table border=1>
+    {% for fnd in hold_on_fund_list %}
+    	<tr>
+			<td>{{ fnd.fund.fund_name }}</td>
+			<td>{{ fnd.netprice }}</td>
+			<td>{{ fnd.date|date:'m-d-Y' }}</td>
+		</tr>        
+    {% endfor %}
+	</table>    
+	<a href="{% url 'funds:refresh_netprice' %}">update netprice</a> 
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
