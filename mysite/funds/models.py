@@ -73,9 +73,36 @@ class RedemptionRateTable(models.Model):
 		return '%s -> %d: %g' % ( self.fund.fund_name, self.days, self.rate_value)
 		
 
-class Account(models.Model):
-	pass
-
-class Trade(models.Model):
+class PruchaseTrade(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
-	trade_date = models.DateField()
+	purchase_date = models.DateField()
+	amount = models.DecimalField(max_digits=9, decimal_places=2)
+	ack_amount = models.DecimalField('net amount', max_digits=9, decimal_places=2, default=0)
+	netprice = models.DecimalField(max_digits=6, decimal_places=4, default=0)
+	holdon_shares = models.DecimalField('hold on shares',max_digits=9, decimal_places=2, default=0)
+
+	def __str__(self):
+		return 'fund:%s date:%s amount:%g' % (self.fund, self.purchase_date, self.amount)
+
+	def net_purchase_amount(self):
+		return (self.amount / (1 + self.fund.fund_p_rate))
+
+	def calc_holdon_shares(self):	
+		if self.netprice>0.0 :
+			return (self.net_purchase_amount() / self.netprice)
+
+	def updateNetprice(self):
+		fhs = self.fund.fundhistory_set.filter(date = self.purchase_date)		
+		if len(fhs) > 0:
+			fh = fhs[0]
+			self.netprice  =fh.netprice
+			self.ack_amount = self.net_purchase_amount()
+			self.holdon_shares = self.calc_holdon_shares()
+			self.save()
+
+	def hold_on_days(self):
+		current_date = datetime.datetime.now().date()
+		baseline_date = self.purchase_date
+		return (current_date - baseline_date).days				
+
+
