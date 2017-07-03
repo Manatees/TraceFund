@@ -19,6 +19,10 @@ def refresh_fund_netprice(request):
 	Fund.refresh_holdon_fund()
 	return HttpResponseRedirect(reverse('funds:hold_on_funds'))
 
+def do_confirm_shares(request):
+	[fnd.ack_fund_shares() for fnd in Fund.objects.all()]
+	return HttpResponseRedirect(reverse('funds:hold_on_reports'))
+
 class HoldOnFundsView(generic.ListView):
 	template_name = 'funds/hold_on_funds.html'
 	context_object_name = 'hold_on_fund_list'
@@ -26,3 +30,10 @@ class HoldOnFundsView(generic.ListView):
 	def get_queryset(self):
 		hold_funds = Fund.objects.all()
 		return [fnd.latest_fund_data() for fnd in hold_funds]
+
+class HoldOnReports(generic.ListView):
+	template_name = 'funds/hold_on_reports.html'
+	context_object_name = 'hold_on_funds'
+
+	def get_queryset(self):
+		return Fund.objects.all()

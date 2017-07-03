@@ -2,6 +2,7 @@
 
 from django.db import models
 from . import utilities
+from decimal import Decimal
 import datetime
 
 class Fund(models.Model):
@@ -33,7 +34,10 @@ class Fund(models.Model):
 
 	def __refresh_fund_data(self, in_days):
 		return utilities.do_it(self.fund_code, in_days)
-
+	
+	""" 
+	!!!IMPORTANT!!!
+	"""
 	def update(self):
 		update_records = 100
 		if self.latest_fund_data() == None:
@@ -54,6 +58,57 @@ class Fund(models.Model):
 
 	def __insert_history(self, _date, _price, _note):		
 		self.fundhistory_set.create(date=_date, netprice=_price, note=_note)
+	
+	"""
+	invest amount price
+	"""
+	def invest_amount(self):
+		return sum([fd.amount for fd in self.pruchasetrade_set.all() if fd.netprice>0])
+
+	"""
+	confirm purchase shares !!!IMPORTANT!!!
+	"""
+	def ack_fund_shares(self):
+		can_update_fund = [fd for fd in self.pruchasetrade_set.all() if fd.netprice == 0]
+		for f_trade in can_update_fund:
+			f_trade.updateNetprice()
+
+	"""
+		hold on of shares
+	"""
+	def hold_on_shares_count(self):
+		return sum([fd.holdon_shares for fd in self.pruchasetrade_set.all()])
+	"""
+		hold on of money
+	"""		
+	def hold_on_amount_count(self):		
+		p = self.latest_fund_data().netprice
+		s = self.hold_on_shares_count()
+		return (p*s).quantize(Decimal('0.00')) 
+	"""
+		hold on unitprice
+	"""
+	def hold_on_unit_price(self):		
+		if self.hold_on_shares_count():
+			return (self.invest_amount() / self.hold_on_shares_count()).quantize(Decimal('0.0000')) 
+	"""
+		latest netprice
+	"""
+	def latest_netprice(self):
+		return self.latest_fund_data().netprice.quantize(Decimal('0.0000')) 
+
+	"""
+		hold on benefit
+	"""
+	def benefits(self):
+		return (self.hold_on_amount_count()-self.invest_amount()).quantize(Decimal('0.00')) 
+
+	"""
+		hold on benefit rate
+	"""
+	def benefit_rate(self):
+		if self.invest_amount():
+			return (self.benefits() / self.invest_amount() * 100).quantize(Decimal('0.00')) 
 
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
