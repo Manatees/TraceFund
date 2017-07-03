@@ -91,11 +91,15 @@ class Fund(models.Model):
 	def hold_on_unit_price(self):		
 		if self.hold_on_shares_count():
 			return (self.invest_amount() / self.hold_on_shares_count()).quantize(Decimal('0.0000')) 
+		return Decimal('0').quantize(Decimal('0.0000'))
 	"""
 		latest netprice
 	"""
 	def latest_netprice(self):
 		return self.latest_fund_data().netprice.quantize(Decimal('0.0000')) 
+
+	def latest_date(self):
+		return self.latest_fund_data().date	
 
 	"""
 		hold on benefit
@@ -108,7 +112,8 @@ class Fund(models.Model):
 	"""
 	def benefit_rate(self):
 		if self.invest_amount():
-			return (self.benefits() / self.invest_amount() * 100).quantize(Decimal('0.00')) 
+			return (self.benefits() / self.invest_amount() * 100).quantize(Decimal('0.00'))
+		return Decimal('0').quantize(Decimal('0.00'))
 
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)

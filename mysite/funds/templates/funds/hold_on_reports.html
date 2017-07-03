@@ -22,7 +22,7 @@
 		</div>
 		
 	{% if hold_on_funds %}
-		<table class="table">
+		<table class="table table-striped">
 			<tr>
 				<th>Fund Name</th>
 				<th>Invest Amount</th>
@@ -39,10 +39,10 @@
 				<td>{{ fnd.invest_amount }}</td>
 				<td>{{ fnd.hold_on_shares_count }}</td>
 				<td>{{ fnd.hold_on_amount_count }}</td>
-				<td>{{ fnd.latest_netprice }}
+				<td>{{ fnd.latest_netprice }} ({{ fnd.latest_date|date:'m-d-Y' }})</td>
 				<td>{{ fnd.hold_on_unit_price }}</td>
 				<td>{{ fnd.benefits }}</td>
-				<td>{{ fnd.benefit_rate }}</td>
+				<td>{{ fnd.benefit_rate }}%</td>
 			</tr>        
 	    {% endfor %}
 		</table>    
