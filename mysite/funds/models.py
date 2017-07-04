@@ -140,6 +140,7 @@ class Fund(models.Model):
 			return (self.benefits() / self.invest_amount() * 100).quantize(Decimal('0.00'))
 		return Decimal('0').quantize(Decimal('0.00'))
 
+
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
 	date = models.DateField('history date')

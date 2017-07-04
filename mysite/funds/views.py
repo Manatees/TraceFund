@@ -37,3 +37,8 @@ class HoldOnReports(generic.ListView):
 
 	def get_queryset(self):
 		return Fund.objects.all()
+
+class TradeHistory(generic.DetailView):
+	model = Fund
+	template_name = 'funds/trade_history.html'
+

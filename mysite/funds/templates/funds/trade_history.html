@@ -1,0 +1,59 @@
+{% extends 'fund_base_page.html' %}
+
+{% block title %} 交易历史 {% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+
+
+{% block body %}
+
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<h3>{{ fund.fund_name }} <small>{{ fund.fund_code }}</small></h3>
+		</div>
+		<div class="panel-body">
+			<div class="pull-right">
+				<a href="{% url 'funds:hold_on_reports' %}" class="btn btn-default">
+					返回
+					<i class="fa fa-chevron-right fa-lg fa-fw" aria-hidden="true"></i>
+				</a> 	
+			</div>		
+		</div>
+	{% if fund.pruchasetrade_set.all %}
+		<table class="table table-striped" align="center">
+			<tr>
+				<th>时间</th>
+				<th>金额</th>
+				<th>净值</th>
+				<th>份额</th>
+			</tr>
+	    {% for trade in fund.pruchasetrade_set.all %}
+	    	<tr class="tr_hover">				
+				<td>{{ trade.purchase_date|date:'m-d-Y' }}</td>
+				<td>{{ trade.amount }}</td>
+				<td>{{ trade.netprice }}</td>
+				<td>{{ trade.holdon_shares }}</td>				
+			</tr>        
+	    {% endfor %}
+		</table>    
+
+	{% else %}
+	    <p>No trades are available.</p>
+	{% endif %}
+
+	</div>
+
+{% endblock %}
+
+
+{% block js %}
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		})
+	</script>
+
+{% endblock %}
