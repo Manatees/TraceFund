@@ -63,7 +63,12 @@ class Fund(models.Model):
 	invest amount price
 	"""
 	def invest_amount(self):
-		return sum([fd.amount for fd in self.pruchasetrade_set.all() if fd.netprice>0])
+		return sum([fd.amount for fd in self.pruchasetrade_set.all() if fd.netprice>0]) - self.redemption_benefit_amount()
+	"""
+	benefit amount
+	"""
+	def redemption_benefit_amount(self):
+		return sum([fd.benefit_amount for fd in self.redemptiontrade_set.all() if fd.net_price>0])	
 
 	"""
 	confirm purchase shares !!!IMPORTANT!!!
@@ -77,7 +82,25 @@ class Fund(models.Model):
 		hold on of shares
 	"""
 	def hold_on_shares_count(self):
-		return sum([fd.holdon_shares for fd in self.pruchasetrade_set.all()])
+		return sum([fd.holdon_shares for fd in self.pruchasetrade_set.all()]) - self.redemption_shares_count()
+	"""
+		redemption shares count
+	"""
+	def redemption_shares_count(self):
+		return sum([fd.redemption_share_amount for fd in self.redemptiontrade_set.all()])		
+
+	"""
+		hold on of share details
+	"""
+	def hold_on_share_details(self):
+		dic = dict([(str(r_rate.rate_value), []) for r_rate in self.redemptionratetable_set.order_by('days')])
+		for fd in self.pruchasetrade_set.all():
+			days = fd.hold_on_days()
+			shares = fd.holdon_shares
+			rate = self.current_redemption_rate(days)
+			dic[str(rate)].append({'id':fd.id, 'amount':shares})
+		return dic
+
 	"""
 		hold on of money
 	"""		
@@ -97,7 +120,9 @@ class Fund(models.Model):
 	"""
 	def latest_netprice(self):
 		return self.latest_fund_data().netprice.quantize(Decimal('0.0000')) 
-
+	"""
+		latest date
+	"""
 	def latest_date(self):
 		return self.latest_fund_data().date	
 
@@ -165,4 +190,12 @@ class PruchaseTrade(models.Model):
 		baseline_date = self.purchase_date
 		return (current_date - baseline_date).days				
 
+
+class RedemptionTrade(models.Model):
+	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
+	redemption_date = models.DateField()
+	redemption_share_amount = models.DecimalField(max_digits=9, decimal_places=2)
+	redemption_fee = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+	net_price = models.DecimalField(max_digits=6, decimal_places=4, default=0)
+	benefit_amount = models.DecimalField('benefit amount', max_digits=9, decimal_places=2, default=0)
 
