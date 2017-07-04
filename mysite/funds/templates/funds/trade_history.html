@@ -22,20 +22,20 @@
 				</a> 	
 			</div>		
 		</div>
-	{% if fund.pruchasetrade_set.all %}
+	{% if fund.trade_detail %}
 		<table class="table table-striped" align="center">
 			<tr>
 				<th>时间</th>
+				<th>购买/赎回</th>
 				<th>金额</th>
 				<th>净值</th>
 				<th>份额</th>
 			</tr>
-	    {% for trade in fund.pruchasetrade_set.all %}
-	    	<tr class="tr_hover">				
-				<td>{{ trade.purchase_date|date:'m-d-Y' }}</td>
-				<td>{{ trade.amount }}</td>
-				<td>{{ trade.netprice }}</td>
-				<td>{{ trade.holdon_shares }}</td>				
+	    {% for trade in fund.trade_detail %}
+	    	<tr class="tr_hover">
+	    		{% for item in trade %}				
+					<td>{{ item }}</td>
+				{% endfor %}				
 			</tr>        
 	    {% endfor %}
 		</table>    

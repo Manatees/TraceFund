@@ -140,6 +140,12 @@ class Fund(models.Model):
 			return (self.benefits() / self.invest_amount() * 100).quantize(Decimal('0.00'))
 		return Decimal('0').quantize(Decimal('0.00'))
 
+	def trade_detail(self):
+		p = [(pd.purchase_date, 'purchase', pd.amount, pd.netprice, pd.holdon_shares) for pd in self.pruchasetrade_set.all()]
+		r = [(pr.redemption_date, 'redemption', pr.benefit_amount, pr.net_price, pr.redemption_share_amount) for pr in self.redemptiontrade_set.all()]
+		ret = (p+r)
+		ret.sort(reverse=True)
+		return ret
 
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
