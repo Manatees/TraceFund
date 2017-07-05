@@ -16,10 +16,25 @@
 		</div>
 		<div class="panel-body">
 			<div class="pull-right">
-				<a href="{% url 'funds:hold_on_reports' %}" class="btn btn-default">
-					返回
-					<i class="fa fa-chevron-right fa-lg fa-fw" aria-hidden="true"></i>
-				</a> 	
+				<div class="btn-group">
+					<button type="button" class="btn btn-default" data-toggle="modal" data-target="#AddModal" data-action="{% url 'funds:purchase' fund.id %}" data-actionname="购买">
+						<i class="fa fa-plus fa-lg fa-fw"></i>
+						买入
+					</button>
+
+					<button type="button" class="btn btn-default" data-toggle="modal" data-target="#AddModal" data-action="{% url 'funds:redemption' fund.id %}" data-actionname="赎回">
+						<i class="fa fa-minus fa-lg fa-fw"></i>
+						卖出
+					</button>
+
+					<a href="{% url 'funds:liquidation' fund.id %}" class="btn btn-default">
+						<i class="fa fa-trash fa-lg fa-fw"></i>清盘
+					</a>
+					<a href="{% url 'funds:hold_on_reports' %}" class="btn btn-default">
+						<i class="fa fa-undo fa-lg fa-fw" aria-hidden="true"></i>
+						返回
+					</a> 	
+				</div>
 			</div>		
 		</div>
 	{% if fund.trade_detail %}
@@ -45,14 +60,70 @@
 	{% endif %}
 
 	</div>
+    
+    <!-- Modal Contents -->
+    <div id="AddModal" class="modal fade"> <!-- class modal and fade -->
+      <div class="modal-dialog">
+        <div class="modal-content">
+          
+          <div class="modal-header"> <!-- modal header -->		  
+            <button type="button" class="close" data-dismiss="modal"
+            aria-hidden="true">×</button>
+			
+            <h3 class="modal-title"></h3>
+          </div>
+		  
+          <div class="modal-body"> <!-- modal body -->      	  
+	        <form id="purchase_form" action="{% url 'funds:purchase' fund.id %}" method="post">
+	          {% csrf_token %}
+	          <div class="form-group">
+	            <label for="recipient-name" class="control-label">时间:</label>
+	            <input type="text" class="form-control datepicker" name="trade_date">
+	          </div>
+	          <div class="form-group">
+	            <label for="message-text" class="control-label">金额:</label>
+	            <input type="text" class="form-control" name="trade_amount">
+	          </div>
+	        </form>
+          </div>
+		  
+          <div class="modal-footer"> <!-- modal footer -->
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" id="submitPurchase" >确定</button>
+          </div>
+		  
+        </div> <!-- / .modal-content -->
+      </div> <!-- / .modal-dialog -->
+    </div><!-- / .modal --> 
 
 {% endblock %}
 
 
 {% block js %}
 	<script type="text/javascript">
-		$(document).ready(function(){
+		$("#submitPurchase").click(function(){
+			$("#purchase_form").submit();
+		})
 
+		$('#AddModal').on('show.bs.modal', function (event) {
+		  var button = $(event.relatedTarget); // Button that triggered the modal
+		  var action_url = button.data('action'); // Extract info from data-* attributes
+		  var title = button.data('actionname');
+
+		  var modal = $(this)		 
+		  modal.find('.modal-title').text(title);
+		  // modal.find('.modal-body input').val(recipient)
+		  $("#purchase_form").attr("action", action_url);	
+
+		})		
+
+		$(document).ready(function(){
+			$('.datepicker').datepicker({
+				autoclose: true,
+				todayBtn: 'linked',
+				format: "yyyy-mm-dd"
+			});
+			$("#purchase_form ")
 		})
 	</script>
 

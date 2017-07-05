@@ -13,4 +13,8 @@ urlpatterns = [
 
 	url(r'^refresh_netprice/$', views.refresh_fund_netprice, name='refresh_netprice'),
 	url(r'^do_confirm_shares/$',views.do_confirm_shares, name="do_confirm_shares"),
+	url(r'^(?P<fund_id>[0-9]+)/purchase/$', views.purchase_fund, name="purchase"),
+	url(r'^(?P<fund_id>[0-9]+)/redemption/$', views.redemption_fund, name="redemption"),
+	url(r'^(?P<fund_id>[0-9]+)/liquidation/$', views.liquidation, name="liquidation")
+
 ]

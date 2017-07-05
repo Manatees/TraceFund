@@ -4,6 +4,7 @@ from django.db import models
 from . import utilities
 from decimal import Decimal
 import datetime
+import time
 
 class Fund(models.Model):
 	fund_name = models.CharField(max_length=200)
@@ -126,6 +127,10 @@ class Fund(models.Model):
 	def latest_date(self):
 		return self.latest_fund_data().date	
 
+
+	def latest_price_limit(self):
+		return self.latest_fund_data().note
+
 	"""
 		hold on benefit
 	"""
@@ -141,8 +146,8 @@ class Fund(models.Model):
 		return Decimal('0').quantize(Decimal('0.00'))
 
 	def trade_detail(self):
-		p = [(pd.purchase_date, 'purchase', pd.amount, pd.netprice, pd.holdon_shares) for pd in self.pruchasetrade_set.all()]
-		r = [(pr.redemption_date, 'redemption', pr.benefit_amount, pr.net_price, pr.redemption_share_amount) for pr in self.redemptiontrade_set.all()]
+		p = [(str(pd.purchase_date), 'purchase', pd.amount, pd.netprice, pd.holdon_shares) for pd in self.pruchasetrade_set.all()]
+		r = [(str(pr.redemption_date), 'redemption', pr.benefit_amount, pr.net_price, pr.redemption_share_amount) for pr in self.redemptiontrade_set.all()]
 		ret = (p+r)
 		ret.sort(reverse=True)
 		return ret

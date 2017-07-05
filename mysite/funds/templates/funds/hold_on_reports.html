@@ -10,15 +10,17 @@
 		</div>
 		<div class="panel-body">
 			<div class="pull-right">
-				<a href="{% url 'funds:do_confirm_shares' %}" class="btn btn-default">
-					<i class="fa fa-cloud-download fa-lg fa-fw" aria-hidden="true"></i>
-					刷新收益
-				</a>
-				<a href="{% url 'funds:hold_on_funds' %}" class="btn btn-default">
-					查看净值列表
-					<i class="fa fa-chevron-right fa-lg fa-fw" aria-hidden="true"></i>
-				</a> 	
-			</div>		
+				<div class="btn-group">
+					<a href="{% url 'funds:do_confirm_shares' %}" class="btn btn-default">
+						<i class="fa fa-refresh fa-lg fa-fw" aria-hidden="true"></i>
+						确认份额
+					</a>
+					<a href="{% url 'funds:hold_on_funds' %}" class="btn btn-default">
+						<i class="fa fa-list-ol fa-lg fa-fw" aria-hidden="true"></i>
+						净值列表
+					</a> 	
+				</div>		
+			</div>
 		</div>
 		
 	{% if hold_on_funds %}
@@ -28,6 +30,7 @@
 				<th>投入金额</th>
 				<th>持有份额</th>
 				<th>持有金额</th>
+				<th>更新时间</th>
 				<th>最新净值</th>
 				<th>持有单价</th>
 				<th>收益</th>
@@ -39,7 +42,8 @@
 				<td>{{ fnd.invest_amount }}</td>
 				<td>{{ fnd.hold_on_shares_count }}</td>
 				<td>{{ fnd.hold_on_amount_count }}</td>
-				<td>{{ fnd.latest_netprice }} ({{ fnd.latest_date|date:'m-d-Y' }})</td>
+				<td>{{ fnd.latest_date|date:'Y-m-d' }}</td>
+				<td data-pricelimit="{{ fnd.latest_price_limit }}">{{ fnd.latest_netprice }} ({{ fnd.latest_price_limit }})</td>
 				<td>{{ fnd.hold_on_unit_price }}</td>
 				<td>{{ fnd.benefits }}</td>
 				<td data-rate="{{fnd.benefit_rate }}">{{ fnd.benefit_rate }}%</td>
@@ -60,29 +64,44 @@
 
 {% block js %}
 	<script type="text/javascript">
+
+	function benefitColor(){
+		$(".tr_hover td[data-rate]").each(function(){
+			var context = $(this).context;
+			var td = $(context);
+			var tr = td.parent();
+			var rate = Number(td.attr("data-rate"));			
+			var rowStatus = ""
+
+			if ( 3.0 <= rate) {
+				rowStatus = "success";					
+			} else if (rate <= -10.0) {
+				rowStatus = "danger";
+			} else if (rate <= -3.0) {
+				rowStatus = "warning";
+			} else if (rate > 0) {
+				rowStatus = "info";
+			}
+
+			if (rowStatus !== "") {
+				$(tr).addClass(rowStatus);
+			}
+
+		});	
+
+		$(".tr_hover td[data-pricelimit]").each(function(){
+			var td = $($(this).context);
+			var isSign = td.attr("data-pricelimit").charAt(0) == "-";
+			if (isSign) {
+				td.append('<i class="text-success fa fa-long-arrow-down fa-fw"></i>');
+			} else {
+				td.append('<i class="text-danger fa fa-long-arrow-up fa-fw"></i>');
+			}
+		});
+	}
+
 		$(document).ready(function(){
-			
-			$(".tr_hover td[data-rate]").each(function(){
-				var context = $(this).context;
-				var td = $(context);
-				var tr = context.parentElement;
-				var rate = Number(td.attr("data-rate"));
-				
-				var rowStatus = ""
-
-				if ( 3.0 <= rate) {
-					rowStatus = "success";					
-				} else if (rate <= -10.0) {
-					rowStatus = "danger";
-				} else if (rate <= -3.0) {
-					rowStatus = "warning";
-				}
-
-				if (rowStatus !== "") {
-					$(tr).addClass(rowStatus);
-				}
-
-			});
+			benefitColor();
 
 		})
 	</script>
