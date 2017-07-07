@@ -43,7 +43,7 @@
 				<td>{{ fnd.hold_on_shares_count }}</td>
 				<td>{{ fnd.hold_on_amount_count }}</td>
 				<td>{{ fnd.latest_date|date:'Y-m-d' }}</td>
-				<td data-pricelimit="{{ fnd.latest_price_limit }}">{{ fnd.latest_netprice }} ({{ fnd.latest_price_limit }})</td>
+				<td data-pricelimit="{{ fnd.latest_price_limit }}">{{ fnd.latest_netprice }}</td>
 				<td>{{ fnd.hold_on_unit_price }}</td>
 				<td>{{ fnd.benefits }}</td>
 				<td data-rate="{{fnd.benefit_rate }}">{{ fnd.benefit_rate }}%</td>
@@ -91,11 +91,13 @@
 
 		$(".tr_hover td[data-pricelimit]").each(function(){
 			var td = $($(this).context);
-			var isSign = td.attr("data-pricelimit").charAt(0) == "-";
+			pricelimit = td.attr("data-pricelimit");			
+			var isSign = pricelimit.charAt(0) == "-";
+
 			if (isSign) {
-				td.append('<i class="text-success fa fa-long-arrow-down fa-fw"></i>');
-			} else {
-				td.append('<i class="text-danger fa fa-long-arrow-up fa-fw"></i>');
+				td.append( ' (' + pricelimit + ')<i class="text-success fa fa-long-arrow-down fa-fw"></i>');
+			} else if(pricelimit != '0') {
+				td.append( ' (' + pricelimit + ')<i class="text-danger fa fa-long-arrow-up fa-fw"></i>');
 			}
 		});
 	}

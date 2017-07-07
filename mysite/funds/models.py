@@ -57,7 +57,12 @@ class Fund(models.Model):
 		r_data = self.__refresh_fund_data(diff_days)
 		[self.__insert_history(fnd[0], fnd[1], fnd[3]) for fnd in r_data if fnd[0] > str(baseline_date)]		
 
-	def __insert_history(self, _date, _price, _note):		
+	def __insert_history(self, _date, _price, _note):	
+		try:
+			float(_note.rstrip('%'))
+		except ValueError:
+			_note = '0'
+
 		self.fundhistory_set.create(date=_date, netprice=_price, note=_note)
 	
 	"""
