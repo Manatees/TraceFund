@@ -1,12 +1,13 @@
 from django.conf.urls import url 
 
+
 from . import views
 
 app_name = 'funds'
 urlpatterns = [
 	url(r'^testjson/$', views.test_json, name='test_json'),
 
-	url(r'^$', views.HoldOnReports.as_view(), name="index"),
+	url(r'^$', views.HoldOnReports.as_view(), name='login'),	
 	url(r'^(?P<pk>[0-9]+)/$', views.TradeHistory.as_view(), name='trade_history'),
 	url(r'^hold_on_funds/$',views.HoldOnFundsView.as_view(), name="hold_on_funds"),
 	url(r'^hold_on_reports/$',views.HoldOnReports.as_view(), name="hold_on_reports"),
