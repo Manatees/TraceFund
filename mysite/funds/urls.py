@@ -16,6 +16,11 @@ urlpatterns = [
 	url(r'^do_confirm_shares/$',views.do_confirm_shares, name="do_confirm_shares"),
 	url(r'^(?P<fund_id>[0-9]+)/purchase/$', views.purchase_fund, name="purchase"),
 	url(r'^(?P<fund_id>[0-9]+)/redemption/$', views.redemption_fund, name="redemption"),
-	url(r'^(?P<fund_id>[0-9]+)/liquidation/$', views.liquidation, name="liquidation")
+	url(r'^(?P<fund_id>[0-9]+)/liquidation/$', views.liquidation, name="liquidation"),
+	url(r'^(?P<fund_code>[0-9]+)/estimated_price/$', views.estimated_price, name='estimated_price'),
+
+	url(r'^cancel_purchased/(?P<fund_id>[0-9]+)/(?P<purchase_id>[0-9]+)/$', views.cancel_purchased, name='cancel_purchased'),	
+	url(r'^cancel_redemption/(?P<fund_id>[0-9]+)/(?P<redemption_id>[0-9]+)/$', views.cancel_redemption, name='cancel_redemption'),
+	url(r'^purchase_detail/(?P<fund_id>[0-9]+)/(?P<purchase_id>[0-9]+)/$', views.purchase_fund_detail, name='purchase_fund_detail'),
 
 ]

@@ -5,7 +5,8 @@ from django.urls import reverse
 from django.views import generic
 
 from .models import Fund
-
+from . import utilities
+import time
 
 def test_json(request):
 	response_data = {'result': 'failed', 'message': 'You messed up.'}
@@ -40,13 +41,42 @@ def purchase_fund(request, fund_id):
 	return HttpResponseRedirect(reverse('funds:trade_history', args=(fund.id,)))
 
 '''
+	撤消购买
+'''
+def cancel_purchased(rquest, fund_id, purchase_id):
+	fund = get_object_or_404(Fund, pk=fund_id)
+	pd = fund.pruchasetrade_set.get(pk=purchase_id)	
+	pd.delete()
+	return HttpResponseRedirect(reverse('funds:trade_history', args=(fund.id,)))	
+
+def purchase_fund_detail(request, fund_id, purchase_id):
+	# fund_id=15
+	# purchase_id = 464
+	fund = Fund.objects.get(pk=fund_id)
+	purchase_detail = fund.pruchasetrade_set.get(pk=purchase_id)
+	data = {'date':str(purchase_detail.purchase_date), 'amount':str(purchase_detail.amount)}
+	return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+'''
 	赎回
 '''
 def redemption_fund(request, fund_id):
 	fund = get_object_or_404(Fund, pk=fund_id)	
 	_date = request.POST['trade_date']
-	_amount = request.POST['trade_amount']
-	fund.redemptiontrade_set.create(redemption_date=_date, redemption_share_amount=_amount)
+	_shares = request.POST['trade_amount']
+	_netprice = request.POST['trade_netprice']
+	_money = request.POST['trade_money']
+	fund.redemptiontrade_set.create(redemption_date=_date, redemption_share_amount=_shares, net_price = _netprice, benefit_amount=_money)
+	return HttpResponseRedirect(reverse('funds:trade_history', args=(fund.id,)))	
+
+'''
+	撤消赎回
+'''
+def cancel_redemption(rquest, fund_id, redemption_id):
+	fund = get_object_or_404(Fund, pk=fund_id)
+	pd = fund.redemptiontrade_set.get(pk=redemption_id)	
+	pd.delete()
 	return HttpResponseRedirect(reverse('funds:trade_history', args=(fund.id,)))	
 
 '''
@@ -58,6 +88,22 @@ def liquidation(request, fund_id):
 	[fnd.delete() for fnd in fund.redemptiontrade_set.all()]
 	return HttpResponseRedirect(reverse('funds:trade_history', args=(fund.id,)))		
 
+
+'''
+	净值估算
+'''
+def estimated_price(request, fund_code):
+	l = time.localtime()
+	t1 = (l.tm_year, l.tm_mon, l.tm_mday, 9, 30, 0, 0, 0, 0)
+	s = time.mktime(t1)
+	t2 = (l.tm_year, l.tm_mon, l.tm_mday, 15, 0, 0, 0, 0, 0)
+	e = time.mktime(t2)
+	c = time.time()
+
+	if(c>s and c<e):
+		json_data = utilities.estimated_value(fund_code)
+		return HttpResponse(json.dumps(json_data), content_type='application/json')
+	return HttpResponse('{}', content_type='application/json')
 
 ''' 
 	净值列表

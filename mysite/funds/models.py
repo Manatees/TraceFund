@@ -162,6 +162,13 @@ class Fund(models.Model):
 		ret.sort(reverse=True)
 		return ret
 
+	'''
+		估算净值
+	'''
+	def estimated_price_value(self):
+		data = utilities.estimated_value(self.fund_code)
+		return data['gsz']	
+
 class FundHistory(models.Model):
 	fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
 	date = models.DateField('history date')

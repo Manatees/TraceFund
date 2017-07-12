@@ -32,6 +32,7 @@
 				<th>持有金额</th>
 				<th>更新时间</th>
 				<th>最新净值</th>
+				<th>估算净值</th>
 				<th>投入单价</th>
 				<th>收益</th>
 				<th>收益率</th>
@@ -44,6 +45,10 @@
 				<td>{{ fnd.hold_on_amount_count }}</td>
 				<td>{{ fnd.latest_date|date:'Y-m-d' }}</td>
 				<td data-pricelimit="{{ fnd.latest_price_limit }}">{{ fnd.latest_netprice }}</td>
+				<td 
+				{% if fnd.fund_code != '501018' and fnd.fund_code != '000930' %}
+				name="estimatedPrice" data-fundcode="{{fnd.fund_code}}" data-url="{% url 'funds:estimated_price' fnd.fund_code %}"
+				{% endif %}></td>
 				<td>{{ fnd.hold_on_unit_price }}</td>
 				<td>{{ fnd.benefits }}</td>
 				<td data-rate="{{fnd.benefit_rate }}">{{ fnd.benefit_rate }}%</td>
@@ -102,10 +107,34 @@
 		});
 	}
 
-		$(document).ready(function(){
-			benefitColor();
+	function fetch_estimated_price(){
+		$("td[name='estimatedPrice']").each(function(){
 
+			var node = $(this).context;
+			var fundCode = $(node).attr("data-fundcode");
+			var url = $(node).attr("data-url");
+			$.ajax({
+				url:url, 
+				type: 'get',
+				data:{fund_code: fundCode}, 
+				success: function(result){
+					if(result.gsz != undefined){
+						$(node).html(result.gsz);
+					}
+					// console.log(result);
+				}
+			});
 		})
+	}	
+
+	// 每隔 60秒 刷新估算净值
+	setInterval(fetch_estimated_price, 1000*60)
+	
+
+	$(document).ready(function(){
+		benefitColor();
+		fetch_estimated_price();
+	})
 	</script>
 
 {% endblock %}

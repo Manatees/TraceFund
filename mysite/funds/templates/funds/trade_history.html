@@ -22,7 +22,7 @@
 						买入
 					</button>
 
-					<button type="button" class="btn btn-default" data-toggle="modal" data-target="#AddModal" data-action="{% url 'funds:redemption' fund.id %}" data-actionname="赎回">
+					<button type="button" class="btn btn-default" data-toggle="modal" data-target="#RedemptionModal" data-action="{% url 'funds:redemption' fund.id %}">
 						<i class="fa fa-minus fa-lg fa-fw"></i>
 						卖出
 					</button>
@@ -38,23 +38,59 @@
 			</div>		
 		</div>
 	{% if fund.trade_detail %}
+	<div class="row">
+	<div class="col-md-6">
 		<table class="table table-striped" align="center">
 			<tr>
-				<th>时间</th>
-				<th>购买/赎回</th>
+				<th colspan="4" class="text-center">购买</th>
+			</tr>
+			<tr>
+				<th>时间</th>				
 				<th>金额</th>
 				<th>净值</th>
 				<th>份额</th>
+				<th></th>
 			</tr>
-	    {% for trade in fund.trade_detail %}
+	    {% for trade in fund.pruchasetrade_set.all|dictsortreversed:'purchase_date' %}
 	    	<tr class="tr_hover">
-	    		{% for item in trade %}				
-					<td>{{ item }}</td>
-				{% endfor %}				
+				<td>{{ trade.purchase_date|date:'Y-m-d' }}</td>				
+				<td>{{ trade.amount }}</td>
+				<td>{{ trade.netprice }}</td>
+				<td>{{ trade.holdon_shares }}</td>
+				<td>				
+				    <a href="{% url 'funds:cancel_purchased' fund_id=fund.id purchase_id=trade.id %}" class="btn btn-xs btn-default">撤消</a>				
+				</td>
 			</tr>        
 	    {% endfor %}
 		</table>    
+	</div>
 
+	<div class="col-md-6">
+		<table class="table table-striped" align="center">
+			<tr>
+				<th colspan="4" class="text-center">赎回</th>
+			</tr>
+			<tr>
+				<th>时间</th>
+				<th>份额</th>
+				<th>金额</th>
+				<th>净值</th>
+				<th></th>
+			</tr>
+	    {% for trade in fund.redemptiontrade_set.all|dictsortreversed:'redemption_date' %}
+	    	<tr class="tr_hover">
+				<td>{{ trade.redemption_date|date:'Y-m-d' }}</td>				
+				<td>{{ trade.redemption_share_amount }}</td>
+				<td>{{ trade.benefit_amount }}</td>
+				<td>{{ trade.net_price }}</td>
+				<td>				
+				    <a href="{% url 'funds:cancel_redemption' fund_id=fund.id redemption_id=trade.id %}" class="btn btn-xs btn-default">撤消</a>				
+				</td>				
+			</tr>        
+	    {% endfor %}
+		</table>
+	</div>
+	</div>
 	{% else %}
 	    <p>No trades are available.</p>
 	{% endif %}
@@ -77,19 +113,64 @@
 	        <form id="purchase_form" action="{% url 'funds:purchase' fund.id %}" method="post">
 	          {% csrf_token %}
 	          <div class="form-group">
-	            <label for="recipient-name" class="control-label">时间:</label>
+	            <label class="control-label">时间:</label>
 	            <input type="text" class="form-control datepicker" name="trade_date">
 	          </div>
 	          <div class="form-group">
-	            <label for="message-text" class="control-label">金额:</label>
+	            <label class="control-label">金额:</label>
 	            <input type="text" class="form-control" name="trade_amount">
-	          </div>
+	          </div>	          
 	        </form>
           </div>
 		  
           <div class="modal-footer"> <!-- modal footer -->
             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
             <button type="button" class="btn btn-primary" id="submitPurchase" >确定</button>
+          </div>
+		  
+        </div> <!-- / .modal-content -->
+      </div> <!-- / .modal-dialog -->
+    </div><!-- / .modal --> 
+
+
+
+
+    <div id="RedemptionModal" class="modal fade"> <!-- class modal and fade -->
+      <div class="modal-dialog">
+        <div class="modal-content">
+          
+          <div class="modal-header"> <!-- modal header -->		  
+            <button type="button" class="close" data-dismiss="modal"
+            aria-hidden="true">×</button>
+			
+            <h3 class="modal-title">赎回</h3>
+          </div>
+		  
+          <div class="modal-body"> <!-- modal body -->      	  
+	        <form id="Redemption_form" action="{% url 'funds:redemption' fund.id %}" method="post">
+	          {% csrf_token %}
+	          <div class="form-group">
+	            <label class="control-label">时间:</label>
+	            <input type="text" class="form-control datepicker" name="trade_date">
+	          </div>
+	          <div class="form-group">
+	            <label class="control-label">份额:</label>
+	            <input type="text" class="form-control" name="trade_amount">
+	          </div>
+	          <div class="form-group">
+		          <label class="control-label">净值</label>
+		          <input type="text" class="form-control" name="trade_netprice"> 
+	          </div>
+	          <div class="form-group">
+	            <label class="control-label">收益:</label>
+	            <input type="text" class="form-control" name="trade_money">
+	          </div>	          
+	        </form>
+          </div>
+		  
+          <div class="modal-footer"> <!-- modal footer -->
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" id="submitRedemption" >确定</button>
           </div>
 		  
         </div> <!-- / .modal-content -->
@@ -105,6 +186,10 @@
 			$("#purchase_form").submit();
 		})
 
+		$("#submitRedemption").click(function(){
+			$("#Redemption_form").submit();
+		})
+
 		$('#AddModal').on('show.bs.modal', function (event) {
 		  var button = $(event.relatedTarget); // Button that triggered the modal
 		  var action_url = button.data('action'); // Extract info from data-* attributes
@@ -112,10 +197,13 @@
 
 		  var modal = $(this)		 
 		  modal.find('.modal-title').text(title);
-		  // modal.find('.modal-body input').val(recipient)
-		  $("#purchase_form").attr("action", action_url);	
+		})
 
-		})		
+		$('#RedemptionModal').on('show.bs.modal', function (event) {
+		  var button = $(event.relatedTarget); // Button that triggered the modal
+		  var action_url = button.data('action'); // Extract info from data-* attributes
+		  
+		})				
 
 		$(document).ready(function(){
 			$('.datepicker').datepicker({

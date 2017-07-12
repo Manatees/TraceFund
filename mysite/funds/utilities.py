@@ -1,6 +1,8 @@
 from html.parser import HTMLParser
 from http import client
 import json
+import time
+from .httplib import geturl
 
 class FundParser(HTMLParser):
 	def __init__(self):
@@ -64,3 +66,10 @@ def do_it(code, size):
 	# print('pages: %s' % pages)
 	# print('curpage: %s' % curpage)
 	return fund_data
+
+def estimated_value(fund_code): 	
+	url = 'http://fundgz.1234567.com.cn/js/%s.js?rt=1499740350966' % fund_code
+	d = geturl(url).decode()
+	valid_data = d[d.find('{'):d.find('}')+1]
+	dt = json.loads(valid_data)
+	return dt
