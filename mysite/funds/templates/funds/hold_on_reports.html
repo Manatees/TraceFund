@@ -9,17 +9,48 @@
 			<h3>持有基金净值跟踪</h3>
 		</div>
 		<div class="panel-body">
-			<div class="pull-right">
-				<div class="btn-group">
-					<a href="{% url 'funds:do_confirm_shares' %}" class="btn btn-default">
-						<i class="fa fa-refresh fa-lg fa-fw" aria-hidden="true"></i>
-						确认份额
-					</a>
-					<a href="{% url 'funds:hold_on_funds' %}" class="btn btn-default">
-						<i class="fa fa-list-ol fa-lg fa-fw" aria-hidden="true"></i>
-						净值列表
-					</a> 	
-				</div>		
+
+			<div class="row">
+
+			<div class="col-md-9">
+			<div class="row">
+				<div class="col-md-3">
+					<div class="input-group">
+					  <span class="input-group-addon">累计投入</span>
+					  <input type="text" class="form-control text-right" id="totalInvestAmount">
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="input-group">
+					  <span class="input-group-addon">累计持有</span>
+					  <input type="text" class="form-control text-right" id="totalHoldOnAmount">
+					</div>			
+				</div>
+
+				<div class="col-md-3">
+					<div class="input-group">
+					  <span class="input-group-addon">累计收益</span>
+					  <input type="text" class="form-control text-right" id="totalHoldOnBenefit">
+					</div>			
+				</div>				
+			</div>
+			</div>
+
+				<div class="col-md-3">					
+					<div class="pull-right">
+						<div class="btn-group">
+							<a href="{% url 'funds:do_confirm_shares' %}" class="btn btn-default">
+								<i class="fa fa-refresh fa-lg fa-fw" aria-hidden="true"></i>
+								确认份额
+							</a>
+							<a href="{% url 'funds:hold_on_funds' %}" class="btn btn-default">
+								<i class="fa fa-list-ol fa-lg fa-fw" aria-hidden="true"></i>
+								净值列表
+							</a> 	
+						</div>		
+					</div>
+				</div>
+
 			</div>
 		</div>
 		
@@ -40,14 +71,14 @@
 	    {% for fnd in hold_on_funds %}
 	    	<tr class="tr_hover">
 				<td><a href="{% url 'funds:trade_history' fnd.id %}">{{ fnd.fund_name }}</a></td>
-				<td>{{ fnd.invest_amount }}</td>
+				<td name="invest_amount">{{ fnd.invest_amount }}</td>
 				<td>{{ fnd.hold_on_shares_count }}</td>
-				<td>{{ fnd.hold_on_amount_count }}</td>
+				<td name="hold_on_amount">{{ fnd.hold_on_amount_count }}</td>
 				<td>{{ fnd.latest_date|date:'Y-m-d' }}</td>
 				<td data-pricelimit="{{ fnd.latest_price_limit }}">{{ fnd.latest_netprice }}</td>
 				<td 
 				{% if fnd.fund_code != '501018' and fnd.fund_code != '000930' %}
-				name="estimatedPrice" data-fundcode="{{fnd.fund_code}}" data-url="{% url 'funds:estimated_price' fnd.fund_code %}"
+				name="estimatedPrice" data-fundcode="{{fnd.fund_code}}" data-url="{% url 'funds:estimated_price' fnd.fund_code %}" data-netprice="{{ fnd.latest_netprice }}"
 				{% endif %}></td>
 				<td>{{ fnd.hold_on_unit_price }}</td>
 				<td>{{ fnd.benefits }}</td>
@@ -59,7 +90,9 @@
 	{% else %}
 	    <p>No funds are available.</p>
 	{% endif %}
+		<div class="panel-foot">
 
+		</div>
 	</div>
 
 
@@ -113,6 +146,7 @@
 			var node = $(this).context;
 			var fundCode = $(node).attr("data-fundcode");
 			var url = $(node).attr("data-url");
+			var price = $(node).attr("data-netprice");
 			$.ajax({
 				url:url, 
 				type: 'get',
@@ -120,6 +154,15 @@
 				success: function(result){
 					if(result.gsz != undefined){
 						$(node).html(result.gsz);
+
+						var gsz = result.gsz;										
+						var compare = gsz - price;
+						if (compare > 0) {
+							arrow = '<i class="text-danger fa fa-long-arrow-up fa-fw"></i>';
+						} else if( compare < 0) {
+							arrow = '<i class="text-success fa fa-long-arrow-down fa-fw"></i>'
+						}
+						$(node).append(arrow);
 					}
 					// console.log(result);
 				}
@@ -131,9 +174,33 @@
 	setInterval(fetch_estimated_price, 1000*60)
 	
 
+	// 统计
+	function calculate_by(selectors){
+		var items = $(selectors).map(function(){
+			return $(this).html();
+		}).get().join('+');
+		return eval(items);		
+	}
+	function computeInvest(){
+		return calculate_by(".tr_hover td[name='invest_amount']");
+	}
+	function computeHoldOnAmount(){
+		return calculate_by(".tr_hover td[name='hold_on_amount']");
+	}
+
+	function total(){
+		var invests = computeInvest();
+		var holdOnAmount = computeHoldOnAmount();
+
+		$("#totalInvestAmount").val(invests.toFixed(2));
+		$("#totalHoldOnAmount").val(holdOnAmount.toFixed(2));
+		$("#totalHoldOnBenefit").val((holdOnAmount - invests).toFixed(2));
+	}
+
 	$(document).ready(function(){
 		benefitColor();
 		fetch_estimated_price();
+		total();
 	})
 	</script>
 

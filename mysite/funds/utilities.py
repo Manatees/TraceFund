@@ -67,9 +67,14 @@ def do_it(code, size):
 	# print('curpage: %s' % curpage)
 	return fund_data
 
+'''
+	调用 eval() 解析字符串语句
+'''
+def jsonpgz(obj):
+	return obj
+
 def estimated_value(fund_code): 	
 	url = 'http://fundgz.1234567.com.cn/js/%s.js?rt=1499740350966' % fund_code
-	d = geturl(url).decode()
-	valid_data = d[d.find('{'):d.find('}')+1]
-	dt = json.loads(valid_data)
-	return dt
+	d = geturl(url).decode().strip(';')	
+	valid_data = eval(d)	
+	return valid_data
