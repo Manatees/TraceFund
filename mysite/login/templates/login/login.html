@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+		
+	</title>
+	{% load static %}
+</head>
+<body>
+
+	<form method="POST" action="{% url 'login:default' %}">
+	{% csrf_token %}
+		<label>User</label><input type="text" name="username">
+		<label>Password</label><input type="password" name="password">
+		<input type="hidden" name="redirect_to" id="redirect_to" />
+		<button type="submit">Submit</button>
+		{% if result %}
+		<label>{{err_msg}}</label>
+		{% endif %}
+	</form>
+
+	<script type="text/javascript" src="{% static 'login/scripts/jquery-2.1.0.js' %}"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+			var param = window.location.search;
+			var item = param.slice(1).split('=');
+			if (item.length==2 && item[0] === 'redirect_to') {
+				$('#redirect_to').val(item[1]);
+			}
+		})
+	</script>
+</body>
+</html>
+

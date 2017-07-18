@@ -3,6 +3,9 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 from .models import Fund
 from . import utilities
@@ -108,9 +111,11 @@ def estimated_price(request, fund_code):
 ''' 
 	净值列表
 '''
-class HoldOnFundsView(generic.ListView):
+class HoldOnFundsView(LoginRequiredMixin, generic.ListView):
 	template_name = 'funds/hold_on_funds.html'
 	context_object_name = 'hold_on_fund_list'
+	login_url = '/login/'
+	redirect_field_name = 'redirect_to'
 
 	def get_queryset(self):
 		hold_funds = Fund.objects.all()
@@ -119,9 +124,11 @@ class HoldOnFundsView(generic.ListView):
 '''
 	汇总
 '''
-class HoldOnReports(generic.ListView):
+class HoldOnReports(LoginRequiredMixin, generic.ListView):
 	template_name = 'funds/hold_on_reports.html'
 	context_object_name = 'hold_on_funds'
+	login_url = '/login/'
+	redirect_field_name = 'redirect_to'
 
 	def get_queryset(self):
 		return Fund.objects.all()
@@ -129,7 +136,9 @@ class HoldOnReports(generic.ListView):
 '''
 	交易历史
 '''
-class TradeHistory(generic.DetailView):
+class TradeHistory(LoginRequiredMixin, generic.DetailView):
 	model = Fund
 	template_name = 'funds/trade_history.html'
+	login_url = '/login/'
+	redirect_field_name = 'redirect_to'
 

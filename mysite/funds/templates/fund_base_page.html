@@ -24,7 +24,9 @@
 	{% endblock %}
 </head>
 <body>
-
+{% if user.is_authenticated %}
+	<p>Welcome, {{ user.username }}. <a href="{% url 'login:logout' %}">logout</a> </p>
+{% endif %}
 <div class="container-fluid">
 	{% block body %}
 	<!-- here body -->
