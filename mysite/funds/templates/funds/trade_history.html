@@ -30,6 +30,9 @@
 					<a href="{% url 'funds:liquidation' fund.id %}" class="btn btn-default">
 						<i class="fa fa-trash fa-lg fa-fw"></i>清盘
 					</a>
+					<a href="{% url 'funds:trade_chart' fund.id %}" class="btn btn-default">
+						<i class="fa fa-bar-chart fa-lg fa-fw"></i>图表
+					</a>
 					<a href="{% url 'funds:hold_on_reports' %}" class="btn btn-default">
 						<i class="fa fa-undo fa-lg fa-fw" aria-hidden="true"></i>
 						返回

@@ -17,6 +17,10 @@ class Fund(models.Model):
 	def __str__(self):
 		return '%s (%s)' % (self.fund_name, self.fund_code)
 
+	def netprice_list(self):
+		netprices = self.fundhistory_set.order_by('-date')
+		return [[str(p.date), float(p.netprice)] for p in netprices]
+
 	def latest_fund_data(self):		
 		fh = self.fundhistory_set.order_by('-date')
 		if len(fh) > 0:
@@ -161,6 +165,10 @@ class Fund(models.Model):
 		ret = (p+r)
 		ret.sort(reverse=True)
 		return ret
+
+	def trade_purchase_detail(self):
+		p = [[str(pd.purchase_date), float(pd.amount), float(pd.holdon_shares)] for pd in self.pruchasetrade_set.order_by('purchase_date')]						
+		return p		
 
 	'''
 		估算净值

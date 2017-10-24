@@ -11,9 +11,12 @@ from .models import Fund
 from . import utilities
 import time
 
-def test_json(request):
-	response_data = {'result': 'failed', 'message': 'You messed up.'}
-	return HttpResponse(json.dumps(response_data), content_type='application/json')
+def test_json(request):	 
+	response_data = {'userName':'manatee','password':'abc123','office':'2'}
+	s = json.dumps(response_data)
+	d = 'jsonpcallback(%s)' % s
+
+	return HttpResponse(d, content_type='application/json')
 
 # def hold_on_funds(request):
 # 	hold_funds = Fund.objects.all()
@@ -142,3 +145,16 @@ class TradeHistory(LoginRequiredMixin, generic.DetailView):
 	login_url = '/login/'
 	redirect_field_name = 'redirect_to'
 
+class TradeChart(LoginRequiredMixin, generic.DetailView):
+	model = Fund
+	template_name = 'funds/trade_chart.html'
+	login_url = '/login/'
+	redirect_field_name = 'redirect_to'	
+
+def chart_data(request, fund_id):	 
+	fund = Fund.objects.get(pk=fund_id)
+	netprices = fund.netprice_list()
+	purchase_data = fund.trade_purchase_detail()
+
+	data = json.dumps({'netprices': netprices, 'purchase': purchase_data})
+	return HttpResponse(data, content_type='application/json')
